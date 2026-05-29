@@ -3,31 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Loja PS3 HEN</title>
+    <title>TH</title>
+
     <style>
-        body { background-color: #1a1a1a; color: #ffffff; font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        h1 { color: #0078d7; font-size: 24px; }
-        .grid { display: block; margin: 0 auto; max-width: 90%; }
-        .card { background: #2a2a2a; border: 2px solid #444; border-radius: 8px; margin: 15px 0; padding: 15px; text-align: left; }
-        .btn { display: inline-block; background-color: #0078d7; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 10px; }
-        .filename { font-size: 18px; font-weight: bold; color: #fff; word-break: break-all; }
-        .size { font-size: 14px; color: #888; margin-top: 5px; }
-        #loading { font-size: 18px; color: #0078d7; margin: 20px; }
-        
-        .debug-box { background-color: #2b1d1d; border: 2px dashed #ff4444; border-radius: 8px; max-width: 90%; margin: 20px auto; padding: 15px; text-align: left; display: none; }
-        .debug-title { color: #ff4444; font-weight: bold; font-size: 18px; margin-bottom: 10px; }
-        .debug-item { font-family: monospace; font-size: 14px; margin: 5px 0; color: #ff9999; word-break: break-all; }
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #0078d7;
+            font-size: 24px;
+        }
+
+        .filtros {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .btn-filtro {
+            background: #333;
+            color: #fff;
+            border: 2px solid #555;
+            border-radius: 6px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn-filtro:hover {
+            background: #444;
+        }
+
+        .btn-filtro.active {
+            background: #0078d7;
+            border-color: #0078d7;
+        }
+
+        .grid {
+            display: block;
+            margin: 0 auto;
+            max-width: 90%;
+        }
+
+        .card {
+            background: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            margin: 15px 0;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .filename {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            word-break: break-all;
+        }
+
+        .size {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #0078d7;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #0063b1;
+        }
+
+        #loading {
+            font-size: 18px;
+            color: #0078d7;
+            margin: 20px;
+        }
+
+        .debug-box {
+            background-color: #2b1d1d;
+            border: 2px dashed #ff4444;
+            border-radius: 8px;
+            max-width: 90%;
+            margin: 20px auto;
+            padding: 15px;
+            text-align: left;
+            display: none;
+        }
+
+        .debug-title {
+            color: #ff4444;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .debug-item {
+            font-family: monospace;
+            font-size: 14px;
+            margin: 5px 0;
+            color: #ff9999;
+            word-break: break-all;
+        }
+
+        .empty-message {
+            background-color: #332a15;
+            border: 2px solid #ffcc00;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            margin-top: 20px;
+        }
     </style>
 </head>
+
 <body>
 
-    <h1>Minha Loja Homebrew PS3</h1>
-    <p>Ative o HEN antes de iniciar qualquer download!</p>
-    
-    <div id="loading">Carregando lista de arquivos diretamente do servidor de armazenamento...</div>
+    <!--<h1>TH</h1> -->
+    <p>Baixe arquivos .pkg para instalação no PS3</p>
+
+    <div class="filtros">
+        <button class="btn-filtro active" onclick="filtrar('TODOS', this)">
+            TODOS
+        </button>
+
+        <button class="btn-filtro" onclick="filtrar('PS1', this)">
+            PS1
+        </button>
+
+        <button class="btn-filtro" onclick="filtrar('PS2', this)">
+            PS2
+        </button>
+
+        <button class="btn-filtro" onclick="filtrar('PS3', this)">
+            PS3
+        </button>
+    </div>
+
+    <div id="loading">
+        Carregando lista de jogos...
+    </div>
 
     <div id="debug-panel" class="debug-box">
-        <div class="debug-title">🚨 Painel de Diagnóstico Técnico</div>
+        <div class="debug-title">
+            🚨 Painel de Diagnóstico Técnico
+        </div>
+
         <div id="debug-msg" class="debug-item"></div>
         <div id="debug-url" class="debug-item"></div>
         <div id="debug-phase" class="debug-item"></div>
@@ -37,92 +174,192 @@
     <div class="grid" id="lista-loja"></div>
 
     <script>
-        // 🚀 RECONSTRUÇÃO À PROVA DE FALHAS: Dividido em blocos estritos de texto puro.
-        // O navegador vai juntar os pedaços na hora de abrir a página, garantindo o link completo.
-        var s1 = "https:";
-        var s2 = "//ia801906.us.archive.org";
-        var s3 = "/21/items/ps3_jogos";
-        var s4 = "/ps3_jogos_files.xml";
-        
-        var urlAPI = s1 + s2 + s3 + s4;
-        
+
+        // API do Internet Archive
+        var urlAPI = "https://archive.org/metadata/ps3_jogos";
+
         var container = document.getElementById('lista-loja');
         var loadingDiv = document.getElementById('loading');
-        
+
         var debugPanel = document.getElementById('debug-panel');
         var debugMsg = document.getElementById('debug-msg');
         var debugUrl = document.getElementById('debug-url');
         var debugPhase = document.getElementById('debug-phase');
         var debugStack = document.getElementById('debug-stack');
 
+        // Lista completa recebida da API
+        var todosArquivos = [];
+
+        // Filtro atual
+        var filtroAtual = "TODOS";
+
         function showError(message, phase, technicalDetails, targetUrl) {
+
             loadingDiv.style.display = 'none';
             debugPanel.style.display = 'block';
-            debugMsg.innerHTML = '<strong>Status do Erro:</strong> ' + message;
-            debugPhase.innerHTML = '<strong>Etapa da Falha:</strong> ' + phase;
-            debugUrl.innerHTML = '<strong>URL Solicitada:</strong> ' + targetUrl;
-            debugStack.innerHTML = '<strong>Log Técnico:</strong> ' + technicalDetails;
+
+            debugMsg.innerHTML =
+                '<strong>Status do Erro:</strong> ' + message;
+
+            debugPhase.innerHTML =
+                '<strong>Etapa da Falha:</strong> ' + phase;
+
+            debugUrl.innerHTML =
+                '<strong>URL Solicitada:</strong> ' + targetUrl;
+
+            debugStack.innerHTML =
+                '<strong>Log Técnico:</strong> ' + technicalDetails;
         }
 
         function formatBytes(bytes) {
-            if (!bytes || bytes === 0) return 'Tamanho desconhecido';
+
+            bytes = parseInt(bytes || 0);
+
+            if (!bytes) {
+                return 'Tamanho desconhecido';
+            }
+
             var k = 1024;
-            var dm = 2;
-            var sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            var i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+            var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+
+            var i = Math.floor(
+                Math.log(bytes) / Math.log(k)
+            );
+
+            return (
+                parseFloat(
+                    (bytes / Math.pow(k, i)).toFixed(2)
+                ) + ' ' + sizes[i]
+            );
         }
 
-        fetch(urlAPI)
-            .then(function(response) {
-                if (!response.ok) {
-                    throw new Error('Servidor respondeu com erro HTTP: ' + response.status);
-                }
-                return response.text();
-            })
-            .then(function(xmlTexto) {
-                loadingDiv.style.display = 'none';
-                
-                var parser = new DOMParser();
-                var xmlDoc = parser.parseFromString(xmlTexto, "text/xml");
-                var arquivos = xmlDoc.getElementsByTagName("file");
-                
-                var pkgsEncontrados = 0;
+        function filtrar(tipo, botao) {
 
-                for (var i = 0; i < arquivos.length; i++) {
-                    var nomeArquivo = arquivos[i].getAttribute("name");
-                    if (!nomeArquivo) continue;
+            filtroAtual = tipo;
 
-                    var extensao = nomeArquivo.toLowerCase().substring(nomeArquivo.length - 4);
-                    
-                    if (extensao === ".pkg") {
-                        pkgsEncontrados++;
-                        
-                        // O download vai usar a rota universal estável do Archive
-                        var linkDownload = "https://archive.org" + nomeArquivo;
-                        
-                        var tagSize = arquivos[i].getElementsByTagName("size");
-                        var tamanhoBytes = 0;
-                        if (tagSize && tagSize.length > 0) {
-                            tamanhoBytes = parseInt(tagSize[0].textContent || tagSize[0].text || "0");
-                        }
-                        
-                        var card = document.createElement('div');
-                        card.className = 'card';
-                        card.innerHTML = '<div class="filename">' + nomeArquivo + '</div>' +
-                                         '<div class="size">Tamanho: ' + formatBytes(tamanhoBytes) + '</div>' +
-                                         '<a class="btn" href="' + linkDownload + '">Baixar PKG</a>';
-                        container.appendChild(card);
+            var botoes =
+                document.querySelectorAll('.btn-filtro');
+
+            botoes.forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+
+            botao.classList.add('active');
+
+            renderizarArquivos();
+        }
+
+        function renderizarArquivos() {
+
+            container.innerHTML = '';
+
+            var encontrados = 0;
+
+            todosArquivos.forEach(function(file) {
+
+                if (!file.name) return;
+
+                if (!file.name.toLowerCase().endsWith('.pkg'))
+                    return;
+
+                if (filtroAtual !== 'TODOS') {
+
+                    var prefixo =
+                        filtroAtual.toUpperCase() + '/';
+
+                    if (
+                        file.name
+                            .toUpperCase()
+                            .indexOf(prefixo) !== 0
+                    ) {
+                        return;
                     }
                 }
 
-                if (pkgsEncontrados === 0) {
-                    container.innerHTML = '<div style="background-color: #332a15; border: 2px solid #ffcc00; padding: 15px; border-radius: 8px; text-align: left;"><strong style="color: #ffcc00;">⚠️ Atenção:</strong> Índice XML lido perfeitamente, mas não há arquivos .pkg na sua pasta ps3_jogos.</div>';
-                }
-            })
-            .catch(function(erroGeral) {
-                showError("Erro ao processar a lista direta de arquivos no servidor físico.", "Fase 1 (Leitura Fragmentada Segura)", erroGeral.message, urlAPI);
+                encontrados++;
+
+                var linkDownload =
+                    "https://archive.org/download/ps3_jogos/" +
+                    encodeURIComponent(file.name);
+
+                var card =
+                    document.createElement('div');
+
+                card.className = 'card';
+
+                card.innerHTML =
+                    '<div class="filename">' +
+                    file.name +
+                    '</div>' +
+
+                    '<div class="size">Tamanho: ' +
+                    formatBytes(file.size) +
+                    '</div>' +
+
+                    '<a class="btn" href="' +
+                    linkDownload +
+                    '">' +
+                    'Baixar PKG' +
+                    '</a>';
+
+                container.appendChild(card);
             });
+
+            if (encontrados === 0) {
+
+                container.innerHTML =
+                    '<div class="empty-message">' +
+                    '<strong style="color:#ffcc00;">⚠️ Atenção:</strong> ' +
+                    'Nenhum arquivo encontrado nesta categoria.' +
+                    '</div>';
+            }
+        }
+
+        fetch(urlAPI)
+
+            .then(function(response) {
+
+                if (!response.ok) {
+                    throw new Error(
+                        'Servidor respondeu HTTP ' +
+                        response.status
+                    );
+                }
+
+                return response.json();
+            })
+
+            .then(function(data) {
+
+                loadingDiv.style.display = 'none';
+
+                if (!data || !data.files) {
+
+                    showError(
+                        'Nenhum arquivo encontrado.',
+                        'Fase 2 (Processamento JSON)',
+                        'Campo files inexistente.',
+                        urlAPI
+                    );
+
+                    return;
+                }
+
+                todosArquivos = data.files;
+
+                renderizarArquivos();
+            })
+
+            .catch(function(erro) {
+
+                showError(
+                    'Erro ao acessar a API do Internet Archive.',
+                    'Fase 1 (Requisição JSON)',
+                    erro.message,
+                    urlAPI
+                );
+            });
+
     </script>
 
 </body>
