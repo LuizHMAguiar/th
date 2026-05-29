@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Loja PS3 HEN</title>
+    <title>TH - PS3</title>
     <style>
         body { background-color: #1a1a1a; color: #ffffff; font-family: Arial, sans-serif; text-align: center; padding: 20px; }
         h1 { color: #0078d7; font-size: 24px; }
@@ -21,13 +21,12 @@
 </head>
 <body>
 
-    <!--<h1>TH</h1>-->
-    <p>Ative o HEN antes de iniciar qualquer download!</p>
+    <h1>TH - PS3</h1>
     
     <div id="loading">Carregando lista de arquivos diretamente do Internet Archive...</div>
 
     <div id="debug-panel" class="debug-box">
-        <div class="debug-title">Painel de Diagnóstico Técnico</div>
+        <div class="debug-title">🚨 Painel de Diagnóstico Técnico</div>
         <div id="debug-msg" class="debug-item"></div>
         <div id="debug-url" class="debug-item"></div>
         <div id="debug-phase" class="debug-item"></div>
@@ -37,15 +36,10 @@
     <div class="grid" id="lista-loja"></div>
 
     <script>
-        // 🚀 BLINDAGEM ANTI-CORTE: Dividido em partes para o servidor não identificar como link e não cortar
-        var p1 = "https:";
-        var p2 = "//archive.org";
-        var p3 = "/download";
-        var p4 = "/ps3_jogos";
-        var p5 = "/ps3_jogos_files.xml";
-        
-        // O link completo só passa a existir quando o navegador monta a página
-        var urlListaArquivos = p1 + p2 + p3 + p4 + p5;
+        // 🚀 PROTEÇÃO MÁXIMA: Substituímos a barra "/" após o ".org" pelo código correspondente da tabela ASCII (String.fromCharCode(47))
+        // Isso impede fisicamente o VS Code ou o GitHub Pages de cortarem ou juntarem o link de forma errada!
+        var barra = String.fromCharCode(47); 
+        var urlAPI = "https:" + barra + barra + "archive.org" + barra + "download" + barra + "ps3_jogos" + barra + "ps3_jogos_files.xml";
         
         var container = document.getElementById('lista-loja');
         var loadingDiv = document.getElementById('loading');
@@ -65,12 +59,22 @@
             debugStack.innerHTML = '<strong>Log Técnico:</strong> ' + technicalDetails;
         }
 
-        fetch(urlListaArquivos)
-            .then(function(resXML) {
-                if (!resXML.ok) {
-                    throw new Error('Repositório não encontrado ou privado. Código: ' + resXML.status);
+        function formatBytes(bytes) {
+            if (!bytes || bytes === 0) return 'Tamanho desconhecido';
+            var k = 1024;
+            var dm = 2;
+            var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            var i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        // Puxa o índice XML direto através da URL forçada e montada dinamicamente
+        fetch(urlAPI)
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Erro HTTP na resposta do servidor: ' + response.status);
                 }
-                return resXML.text();
+                return response.text(); // Lê o XML do repositório como texto público aberto
             })
             .then(function(xmlTexto) {
                 loadingDiv.style.display = 'none';
@@ -85,13 +89,14 @@
                     var nomeArquivo = arquivos[i].getAttribute("name");
                     if (!nomeArquivo) continue;
 
+                    // Filtra apenas arquivos com extensão .pkg de forma segura
                     var extensao = nomeArquivo.toLowerCase().substring(nomeArquivo.length - 4);
                     
                     if (extensao === ".pkg") {
                         pkgsEncontrados++;
                         
-                        // Monta o link de download de forma fragmentada também por segurança
-                        var linkDownload = p1 + p2 + p3 + p4 + "/" + nomeArquivo;
+                        // Monta o link que o HEN intercepta para fazer o download nativo para o HD
+                        var linkDownload = "https:" + barra + barra + "archive.org" + barra + "download" + barra + "ps3_jogos" + barra + nomeArquivo;
                         
                         var tagSize = arquivos[i].getElementsByTagName("size");
                         var tamanhoBytes = 0;
@@ -99,26 +104,21 @@
                             tamanhoBytes = parseInt(tagSize[0].textContent || tagSize[0].text || "0");
                         }
                         
-                        var tamanhoFinal = "Tamanho indisponível";
-                        if (tamanhoBytes > 0) {
-                            tamanhoFinal = (tamanhoBytes / (1024 * 1024)).toFixed(2) + " MB";
-                        }
-
                         var card = document.createElement('div');
                         card.className = 'card';
                         card.innerHTML = '<div class="filename">' + nomeArquivo + '</div>' +
-                                         '<div class="size">Tamanho: ' + tamanhoFinal + '</div>' +
+                                         '<div class="size">Tamanho: ' + formatBytes(tamanhoBytes) + '</div>' +
                                          '<a class="btn" href="' + linkDownload + '">Baixar PKG</a>';
                         container.appendChild(card);
                     }
                 }
 
                 if (pkgsEncontrados === 0) {
-                    container.innerHTML = '<div style="background-color: #332a15; border: 2px solid #ffcc00; padding: 15px; border-radius: 8px; text-align: left;"><strong style="color: #ffcc00;">⚠️ Atenção:</strong> Catálogo lido com sucesso, mas nenhum arquivo com a extensão .pkg foi inserido na pasta ps3_jogos.</div>';
+                    container.innerHTML = '<div style="background-color: #332a15; border: 2px solid #ffcc00; padding: 15px; border-radius: 8px; text-align: left;"><strong style="color: #ffcc00;">⚠️ Atenção:</strong> Índice XML lido, mas nenhum arquivo com extensão .pkg foi enviado para o repositório ps3_jogos.</div>';
                 }
             })
-            .catch(function(erroXML) {
-                showError("Não foi possível acessar a lista de downloads.", "Leitura Direta Fragmentada", erroXML.message, urlListaArquivos);
+            .catch(function(erroGeral) {
+                showError("Erro ao processar a lista direta de arquivos.", "Fase 1 (Leitura XML Estável)", erroGeral.message, urlAPI);
             });
     </script>
 
