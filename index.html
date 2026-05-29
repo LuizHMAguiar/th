@@ -24,7 +24,7 @@
     <h1>Minha Loja Homebrew PS3</h1>
     <p>Ative o HEN antes de iniciar qualquer download!</p>
     
-    <div id="loading">Carregando lista de arquivos através do servidor de espelhamento...</div>
+    <div id="loading">Carregando lista de arquivos diretamente do servidor de armazenamento...</div>
 
     <div id="debug-panel" class="debug-box">
         <div class="debug-title">🚨 Painel de Diagnóstico Técnico</div>
@@ -37,9 +37,14 @@
     <div class="grid" id="lista-loja"></div>
 
     <script>
-        // 🚀 O SEGREDO: Usamos o proxy Cors-Anywhere apontando direto para o link redirecionado que você descobriu!
-        var urlRedirecionada = "https://ia801906.us.archive.org/21/items/ps3_jogos/ps3_jogos_files.xml";
-        var urlAPI = "https://herokuapp.com" + urlRedirecionada;
+        // 🚀 RECONSTRUÇÃO À PROVA DE FALHAS: Dividido em blocos estritos de texto puro.
+        // O navegador vai juntar os pedaços na hora de abrir a página, garantindo o link completo.
+        var s1 = "https:";
+        var s2 = "//ia801906.us.archive.org";
+        var s3 = "/21/items/ps3_jogos";
+        var s4 = "/ps3_jogos_files.xml";
+        
+        var urlAPI = s1 + s2 + s3 + s4;
         
         var container = document.getElementById('lista-loja');
         var loadingDiv = document.getElementById('loading');
@@ -71,7 +76,7 @@
         fetch(urlAPI)
             .then(function(response) {
                 if (!response.ok) {
-                    throw new Error('Erro HTTP no Proxy: ' + response.status);
+                    throw new Error('Servidor respondeu com erro HTTP: ' + response.status);
                 }
                 return response.text();
             })
@@ -93,8 +98,8 @@
                     if (extensao === ".pkg") {
                         pkgsEncontrados++;
                         
-                        // O download vai direto pelo link estável que o PS3 aceita
-                        var linkDownload = "https://archive.org/download/ps3_jogos/" + nomeArquivo;
+                        // O download vai usar a rota universal estável do Archive
+                        var linkDownload = "https://archive.org" + nomeArquivo;
                         
                         var tagSize = arquivos[i].getElementsByTagName("size");
                         var tamanhoBytes = 0;
@@ -112,21 +117,11 @@
                 }
 
                 if (pkgsEncontrados === 0) {
-                    container.innerHTML = '<div style="background-color: #332a15; border: 2px solid #ffcc00; padding: 15px; border-radius: 8px; text-align: left;"><strong style="color: #ffcc00;">⚠️ Atenção:</strong> Catálogo lido, mas nenhum .pkg foi encontrado.</div>';
+                    container.innerHTML = '<div style="background-color: #332a15; border: 2px solid #ffcc00; padding: 15px; border-radius: 8px; text-align: left;"><strong style="color: #ffcc00;">⚠️ Atenção:</strong> Índice XML lido perfeitamente, mas não há arquivos .pkg na sua pasta ps3_jogos.</div>';
                 }
             })
             .catch(function(erroGeral) {
-                // Tratamento amigável caso precise ativar o acesso temporário do proxy público
-                if(erroGeral.message.indexOf("403") !== -1 || true) {
-                    showError(
-                        "O Proxy precisa de ativação prévia.",
-                        "Fase 1 (Acesso ao Servidor de Redirecionamento)",
-                        "Como estamos usando um servidor público de testes, você precisa clicar no link abaixo uma única vez no seu celular/computador e clicar em 'Request temporary access' para liberar os testes locais.",
-                        "https://herokuapp.comcorsdemo"
-                    );
-                } else {
-                    showError("Erro ao processar a lista direta de arquivos.", "Fase 1 (Leitura XML)", erroGeral.message, urlAPI);
-                }
+                showError("Erro ao processar a lista direta de arquivos no servidor físico.", "Fase 1 (Leitura Fragmentada Segura)", erroGeral.message, urlAPI);
             });
     </script>
 
