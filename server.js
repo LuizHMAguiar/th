@@ -1,7 +1,16 @@
-const express = require("express");
-const path = require("path");
+const express = require('express');
+const cors = require('cors');
 
 const app = express();
+
+app.use(cors({
+    origin: [
+        'https://luizhmaguiar.github.io'
+    ]
+}));
+
+const path = require("path");
+
 
 console.log("PASTA:", __dirname);
 
